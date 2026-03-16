@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e036927b9869b09479e3b4bfe8dd6dea
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Props/Cabinet.prefab
+  uploadId: 859084

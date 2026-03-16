@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 67aa63fd48f382e49880c46fa61eb956
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/LogCabin_Dry.prefab
+  uploadId: 859084

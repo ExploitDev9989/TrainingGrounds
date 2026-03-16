@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: bcb2dc9b4bdd24c4b829fc255a96f0ce
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Props/Washboard.prefab
+  uploadId: 859084

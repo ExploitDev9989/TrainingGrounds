@@ -1,0 +1,100 @@
+using UnityEngine;
+
+[RequireComponent(typeof(CharacterController))]
+public class PlayerMovement : MonoBehaviour
+{
+    [Header("Movement")]
+    public float walkSpeed = 5f;
+    public float sprintSpeed = 9f;
+    public float gravity = -9.81f;
+    public float jumpHeight = 1.2f;
+
+    [Header("Sprint")]
+    public KeyCode sprintKey = KeyCode.LeftShift;
+    public float sprintFOV = 75f;
+    public float normalFOV = 60f;
+    public float fovSmooth = 8f;
+
+    private float currentSpeed;
+    private bool isSprinting;
+
+    [Header("Mouse Look")]
+    public Transform cameraTransform;     // for rotation
+    public Camera playerCam;              // for FOV
+    public float mouseSensitivity = 2f;
+    public float maxLookAngle = 85f;
+
+    private CharacterController controller;
+    private Vector3 velocity;
+    private float xRotation = 0f;
+
+    void Awake()
+    {
+        controller = GetComponent<CharacterController>();
+
+        if (playerCam == null)
+            playerCam = GetComponentInChildren<Camera>();
+
+        if (cameraTransform == null && playerCam != null)
+            cameraTransform = playerCam.transform;
+
+        // Set initial FOV safely
+        if (playerCam != null)
+            playerCam.fieldOfView = normalFOV;
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    void Update()
+    {
+        HandleMouseLook();
+
+        // Sprint check BEFORE movement so speed applies this frame
+        isSprinting = Input.GetKey(sprintKey) && (Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0.01f || Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0.01f);
+        currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
+
+        HandleMovement();
+        HandleFOV();
+    }
+
+    void HandleFOV()
+    {
+        if (playerCam == null) return;
+
+        float targetFOV = isSprinting ? sprintFOV : normalFOV;
+        playerCam.fieldOfView = Mathf.Lerp(playerCam.fieldOfView, targetFOV, Time.deltaTime * fovSmooth);
+    }
+
+    void HandleMouseLook()
+    {
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
+
+        transform.Rotate(Vector3.up * mouseX);
+
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -maxLookAngle, maxLookAngle);
+
+        if (cameraTransform != null)
+            cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+    }
+
+    void HandleMovement()
+    {
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+
+        Vector3 move = (transform.right * x + transform.forward * z) * currentSpeed;
+        controller.Move(move * Time.deltaTime);
+
+        if (controller.isGrounded && velocity.y < 0f)
+            velocity.y = -2f;
+
+        if (controller.isGrounded && Input.GetButtonDown("Jump"))
+            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+
+        velocity.y += gravity * Time.deltaTime;
+        controller.Move(velocity * Time.deltaTime);
+    }
+}

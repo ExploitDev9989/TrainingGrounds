@@ -1,0 +1,141 @@
+using System.Collections;
+using UnityEngine;
+
+public class WeaponShoot : MonoBehaviour
+{
+    [Header("Refs")]
+    public Camera playerCam;               // Drag Eyes (Camera) here
+    public Transform firePoint;            // Drag FirePoint here
+
+    [Header("Shooting")]
+    public float range = 100f;
+    public float fireRate = 10f;           // used as a click-spam limiter for semi-auto
+    public int damage = 25;
+
+    [Header("Ammo")]
+    public int magSize = 12;
+    public int ammoInMag = 12;
+    public int reserveAmmo = 60;
+    public float reloadTime = 1.2f;
+
+    [Header("Audio")]
+    public AudioSource audioSource;     // existing AudioSource on gun
+    public AudioClip shootClip;
+    public AudioClip reloadClip;
+    public AudioClip dryFireClip;
+
+
+    [Header("FX (optional)")]
+    public ParticleSystem muzzleFlash;     // Drag MuzzleFlash ParticleSystem here
+    public GameObject hitVfxPrefab;        // Drag HitFX prefab here
+
+    private float nextTimeToFire = 0f;
+    private bool isReloading = false;
+
+    void Awake()
+    {
+        if (playerCam == null)
+            playerCam = Camera.main;
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
+    }
+
+    void Update()
+    {
+        if (isReloading) return;
+
+        // Reload
+        if (Input.GetKeyDown(KeyCode.R) && ammoInMag < magSize && reserveAmmo > 0)
+        {
+            StartCoroutine(Reload());
+            return;
+        }
+
+
+        // Semi-auto fire (one shot per click)
+        if (Input.GetMouseButtonDown(0) && Time.time >= nextTimeToFire)
+        {
+            if (ammoInMag <= 0)
+            {
+                audioSource?.PlayOneShot(dryFireClip);
+                return;
+            }
+
+            nextTimeToFire = Time.time + (1f / fireRate);
+            ammoInMag--;
+
+            Shoot();
+        }
+    }
+
+    void Shoot()
+    {
+        audioSource?.PlayOneShot(shootClip);
+        muzzleFlash?.Play();
+        
+        // 1) Ray from camera center to find what you're aiming at
+        Ray camRay = playerCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        Vector3 aimPoint;
+
+        if (Physics.Raycast(camRay, out RaycastHit camHit, range))
+            aimPoint = camHit.point;
+        else
+            aimPoint = camRay.origin + camRay.direction * range;
+
+        // 2) Fire from muzzle toward aim point (feels more like COD)
+        Vector3 dirFromMuzzle = (aimPoint - firePoint.position).normalized;
+
+        if (Physics.Raycast(firePoint.position, dirFromMuzzle, out RaycastHit hit, range))
+        {
+            var th = hit.collider.GetComponentInParent<TargetHealth>();
+            if (th != null)
+            {
+                Debug.Log("Found TargetHealth on: " + th.name);
+                th.TakeDamage(damage);
+            }
+            else
+            {
+                Debug.Log("NO TargetHealth found on hit object or parents.");
+            }
+            Debug.Log("Hit: " + hit.collider.name);
+            Debug.DrawLine(firePoint.position, hit.point, Color.red, 0.2f);
+
+            // Damage (if target has IDamageable)
+            var dmg = hit.collider.GetComponentInParent<IDamageable>();
+            if (dmg != null)
+                dmg.TakeDamage(damage);
+
+            // Hit VFX
+            if (hitVfxPrefab != null)
+            {
+                Quaternion rot = Quaternion.LookRotation(hit.normal);
+                GameObject fx = Instantiate(hitVfxPrefab, hit.point, rot);
+                Destroy(fx, 1.5f);
+
+                var ps = fx.GetComponent<ParticleSystem>();
+                if (ps != null) ps.Play();
+            }
+        }
+        else
+        {
+            Debug.DrawRay(firePoint.position, dirFromMuzzle * range, Color.red, 0.2f);
+        }
+    }
+
+    IEnumerator Reload()
+    {
+        isReloading = true;
+
+        audioSource?.PlayOneShot(reloadClip);
+
+        yield return new WaitForSeconds(reloadTime);
+
+        int needed = magSize - ammoInMag;
+        int toLoad = Mathf.Min(needed, reserveAmmo);
+
+        ammoInMag += toLoad;
+        reserveAmmo -= toLoad;
+
+        isReloading = false;
+    }
+}

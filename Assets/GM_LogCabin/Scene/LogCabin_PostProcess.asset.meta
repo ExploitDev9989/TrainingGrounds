@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: fedb1a7bff20edb438258bb79e8bb5c3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Scene/LogCabin_PostProcess.asset
+  uploadId: 859084

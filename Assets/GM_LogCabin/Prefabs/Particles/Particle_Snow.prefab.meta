@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6851e4730b214024383f0b86064a1bd3
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Particles/Particle_Snow.prefab
+  uploadId: 859084

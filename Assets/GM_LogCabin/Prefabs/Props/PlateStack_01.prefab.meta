@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 592a8c0f84f9d6245ad4e353ca46d671
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Props/PlateStack_01.prefab
+  uploadId: 859084

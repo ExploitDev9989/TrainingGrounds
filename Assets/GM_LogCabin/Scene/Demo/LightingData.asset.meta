@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7eb8e1e434175b145a7a896cf9f140a1
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 112000000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Scene/Demo/LightingData.asset
+  uploadId: 859084

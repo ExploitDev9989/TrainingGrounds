@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 0de1c8bbeb38b0048a9f9f5c8907623b
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Props/Furnace_Logs.prefab
+  uploadId: 859084

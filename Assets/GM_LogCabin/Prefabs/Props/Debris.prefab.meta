@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ae0d4e88e7ea40343a62be5c13279c25
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Props/Debris.prefab
+  uploadId: 859084

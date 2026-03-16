@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 300f24d1912c2c74280470ccad24e8b4
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Props/Kettle.prefab
+  uploadId: 859084

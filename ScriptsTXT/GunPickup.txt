@@ -1,0 +1,34 @@
+using UnityEngine;
+
+public class GunPickup : MonoBehaviour
+{
+    [Header("UI")]
+    public string displayName = "Gun";
+
+    [HideInInspector] public bool isHeld;
+
+    Rigidbody rb;
+    Collider col;
+
+    void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        col = GetComponent<Collider>();
+
+        // On ground = can't shoot
+        var shoot = GetComponent<WeaponShoot>();
+        if (shoot != null) shoot.enabled = false;
+    }
+
+    // Called by PlayerWeaponController
+    public void SetHeld(bool held)
+    {
+        isHeld = held;
+
+        if (rb != null) rb.isKinematic = held;
+        if (col != null) col.enabled = !held;
+
+        var shoot = GetComponent<WeaponShoot>();
+        if (shoot != null) shoot.enabled = held;
+    }
+}

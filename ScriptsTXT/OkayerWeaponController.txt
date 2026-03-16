@@ -1,0 +1,67 @@
+using UnityEngine;
+
+public class PlayerWeaponController : MonoBehaviour
+{
+    [Header("Refs")]
+    public Transform weaponSocket;      // your WeaponSocket under ViewModelRig
+    public Camera playerCam;            // Eyes camera
+
+    [Header("Drop")]
+    public float dropForwardForce = 2f;
+    public float dropUpForce = 1f;
+
+    private GunPickup currentWeapon;
+
+    public bool HasWeapon => currentWeapon != null;
+
+    public void Equip(GunPickup newWeapon)
+    {
+        // If holding something, drop it first
+        if (currentWeapon != null)
+            DropCurrent();
+
+        currentWeapon = newWeapon;
+
+        // Parent to socket
+        newWeapon.transform.SetParent(weaponSocket);
+        newWeapon.transform.localPosition = Vector3.zero;
+        newWeapon.transform.localRotation = Quaternion.identity;
+
+        // Disable physics while held
+        newWeapon.SetHeld(true);
+
+        // Ensure shooting has refs
+        var shoot = newWeapon.GetComponent<WeaponShoot>();
+        if (shoot != null)
+        {
+            shoot.playerCam = playerCam;
+            shoot.enabled = true;
+        }
+    }
+
+    public void DropCurrent()
+    {
+        if (currentWeapon == null) return;
+
+        GunPickup w = currentWeapon;
+        currentWeapon = null;
+
+        // Unparent
+        w.transform.SetParent(null);
+
+        // Enable physics
+        w.SetHeld(false);
+
+        // Disable shooting while on ground
+        var shoot = w.GetComponent<WeaponShoot>();
+        if (shoot != null) shoot.enabled = false;
+
+        // Toss it a bit forward
+        var rb = w.GetComponent<Rigidbody>();
+        if (rb != null && playerCam != null)
+        {
+            rb.AddForce(playerCam.transform.forward * dropForwardForce, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * dropUpForce, ForceMode.Impulse);
+        }
+    }
+}

@@ -1,0 +1,54 @@
+using UnityEngine;
+
+public class PlayerInteractor : MonoBehaviour
+{
+    public Camera playerCam;
+    public float interactRange = 2.5f;
+    public KeyCode interactKey = KeyCode.E;
+
+    private PlayerWeaponController weaponController;
+    private GunPickup lookedAtGun;
+
+    void Start()
+    {
+        if (playerCam == null) playerCam = Camera.main;
+        weaponController = GetComponent<PlayerWeaponController>();
+        if (weaponController == null)
+            weaponController = FindFirstObjectByType<PlayerWeaponController>();
+    }
+
+    void Update()
+    {
+        lookedAtGun = null;
+
+        if (playerCam == null || weaponController == null) return;
+
+        Ray ray = playerCam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        if (Physics.Raycast(ray, out RaycastHit hit, interactRange))
+        {
+            lookedAtGun = hit.collider.GetComponentInParent<GunPickup>();
+            if (lookedAtGun != null && lookedAtGun.isHeld)
+                lookedAtGun = null;
+        }
+
+        if (lookedAtGun != null && Input.GetKeyDown(interactKey))
+        {
+            weaponController.Equip(lookedAtGun);
+        }
+    }
+
+    void OnGUI()
+    {
+        if (lookedAtGun == null) return;
+
+        string name = string.IsNullOrWhiteSpace(lookedAtGun.displayName) ? lookedAtGun.name : lookedAtGun.displayName;
+        string msg = $"Press [E] to pick up {name}";
+
+        var style = new GUIStyle(GUI.skin.label);
+        style.fontSize = 20;
+        style.alignment = TextAnchor.MiddleCenter;
+
+        Rect r = new Rect(0, Screen.height * 0.75f, Screen.width, 40);
+        GUI.Label(r, msg, style);
+    }
+}

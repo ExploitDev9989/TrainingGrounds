@@ -1,0 +1,61 @@
+using UnityEngine;
+
+public class TargetHealth : MonoBehaviour
+{
+    public int maxHealth = 3;
+
+    [Header("FX")]
+    public GameObject hitFX;
+
+    [Header("Audio")]
+    public AudioClip hitSound;
+    public AudioClip destroySound;
+
+    [HideInInspector] public TargetSpawner spawner;
+
+    private int currentHealth;
+    private AudioSource audioSource;
+    private bool isDying;
+
+    void Awake()
+    {
+        currentHealth = maxHealth;
+
+        // Use existing AudioSource on target, or add one automatically
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null) audioSource = gameObject.AddComponent<AudioSource>();
+
+        // Good defaults for world targets
+        audioSource.playOnAwake = false;
+        audioSource.loop = false;
+        audioSource.spatialBlend = 1f; // 3D sound
+    }
+
+    public void TakeDamage(int amount)
+    {
+        if (isDying) return;
+
+        currentHealth -= amount;
+
+        if (hitFX != null)
+            Instantiate(hitFX, transform.position, Quaternion.identity);
+
+        if (hitSound != null)
+            audioSource.PlayOneShot(hitSound);
+
+        if (currentHealth <= 0)
+        {
+            isDying = true;
+
+            // tell spawner first
+            if (spawner != null)
+                spawner.TargetDestroyed();
+
+            if (destroySound != null)
+                audioSource.PlayOneShot(destroySound);
+
+            // small delay so sound can start before object is destroyed
+            Destroy(gameObject, 0.05f);
+        }
+    }
+}

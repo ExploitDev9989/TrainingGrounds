@@ -1,0 +1,56 @@
+using UnityEngine;
+using System.Collections;
+
+public class TargetSpawner : MonoBehaviour
+{
+    public GameObject targetPrefab;
+    public float respawnDelay = 3f;
+
+    GameObject currentTarget;
+    bool isRespawning;
+
+    void Start()
+    {
+        SpawnTarget();
+    }
+
+    void SpawnTarget()
+    {
+        if (targetPrefab == null)
+        {
+            Debug.LogError("TargetSpawner: targetPrefab is NOT assigned!");
+            return;
+        }
+
+        currentTarget = Instantiate(targetPrefab, transform.position, transform.rotation);
+
+        // Wire spawner ref onto the spawned target
+        var th = currentTarget.GetComponentInChildren<TargetHealth>();
+        if (th != null)
+        {
+            th.spawner = this;
+            Debug.Log("TargetSpawner: Spawned target and set spawner ref ?");
+        }
+        else
+        {
+            Debug.LogWarning("TargetSpawner: Spawned target but no TargetHealth found in children ?");
+        }
+    }
+
+    public void TargetDestroyed()
+    {
+        if (isRespawning) return;
+        StartCoroutine(RespawnRoutine());
+    }
+
+    IEnumerator RespawnRoutine()
+    {
+        isRespawning = true;
+        Debug.Log("TargetSpawner: Target destroyed. Respawning in " + respawnDelay + "s...");
+
+        yield return new WaitForSeconds(respawnDelay);
+
+        SpawnTarget();
+        isRespawning = false;
+    }
+}

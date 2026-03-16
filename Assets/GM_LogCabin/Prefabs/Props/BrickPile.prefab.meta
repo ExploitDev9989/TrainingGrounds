@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d569cc036dd39ed4c933ba0882ff2191
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Props/BrickPile.prefab
+  uploadId: 859084

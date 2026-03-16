@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 6edd4222968655b489b97f43f9bf3fa8
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Props/CoffeePot.prefab
+  uploadId: 859084

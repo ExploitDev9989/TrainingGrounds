@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: a199da8593be3d04e952f7dfc4e8bed7
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Particles/Dust.prefab
+  uploadId: 859084

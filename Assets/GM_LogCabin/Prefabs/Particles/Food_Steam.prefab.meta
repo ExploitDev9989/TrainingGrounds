@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 7c316782d80b2594c9b6cf32d7e5b132
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Particles/Food_Steam.prefab
+  uploadId: 859084

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c5f5d1fa81ebd4c4887ae8297f8d331f
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Props/Chair.prefab
+  uploadId: 859084

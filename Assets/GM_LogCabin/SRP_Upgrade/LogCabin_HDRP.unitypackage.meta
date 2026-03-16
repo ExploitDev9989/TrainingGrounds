@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5dc0454631b18c64b85fa547374b96e6
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/SRP_Upgrade/LogCabin_HDRP.unitypackage
+  uploadId: 859084

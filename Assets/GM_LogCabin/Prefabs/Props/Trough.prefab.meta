@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: b509fe47d62f8454e9e0a300d088f6c0
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Props/Trough.prefab
+  uploadId: 859084

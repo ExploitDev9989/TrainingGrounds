@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 08c35c2af3232c141a9643e1d981dd3a
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 155658
+  packageName: Log Cabin
+  packageVersion: 1.5
+  assetPath: Assets/GM_LogCabin/Prefabs/Particles/GodrayCone.prefab
+  uploadId: 859084
