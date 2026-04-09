@@ -28,7 +28,7 @@ public class WeaponShoot : MonoBehaviour
     [Header("Audio")]
     public AudioSource audioSource;        // audio source on the weapon
     public AudioClip shootClip;            // sound for firing
-    public AudioClip reloadClip;           // sound for reloading
+    public AudioClip[] reloadClips;        // changed from single clip to array
     public AudioClip dryFireClip;          // sound when empty
 
     [Header("FX (optional)")]
@@ -168,31 +168,37 @@ public class WeaponShoot : MonoBehaviour
         }
     }
 
-    IEnumerator Reload() // allows the game to pause part of a function while the rest of the game keeps going
+    IEnumerator Reload()
     {
-        isReloading = true; // block shooting while reloading
+        isReloading = true;
 
-        // trigger reload animation (and cancel shoot trigger if needed) not used as i do not have a reload animation.
         if (weaponAnimator != null)
         {
             weaponAnimator.ResetTrigger("Shoot");
             weaponAnimator.SetTrigger("Reload");
         }
 
-        // play reload sound
-        audioSource?.PlayOneShot(reloadClip);
+        if (reloadClips.Length > 0)
+            audioSource?.PlayOneShot(reloadClips[0]);
 
-        // wait for reload time without freezing the game
-        yield return new WaitForSeconds(reloadTime);
+        yield return new WaitForSeconds(0.35f);
 
-        // figure out how many bullets we need and how many we can actually load
+        if (reloadClips.Length > 1)
+            audioSource?.PlayOneShot(reloadClips[1]);
+
+        yield return new WaitForSeconds(0.45f);
+
+        if (reloadClips.Length > 2)
+            audioSource?.PlayOneShot(reloadClips[2]);
+
+        yield return new WaitForSeconds(reloadTime - 0.8f);
+
         int needed = magSize - ammoInMag;
         int toLoad = Mathf.Min(needed, reserveAmmo);
 
-        // add bullets to mag and remove from reserve
         ammoInMag += toLoad;
         reserveAmmo -= toLoad;
 
-        isReloading = false; // reload finished
+        isReloading = false;
     }
 }

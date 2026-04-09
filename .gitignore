@@ -31,3 +31,7 @@ Assets/GM_LogCabin/Source/
 *.mp4
 *.wav
 *.unitypackage
+*.resS
+Test/
+Build/
+Builds/
