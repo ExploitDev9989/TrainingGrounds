@@ -3,14 +3,31 @@ using UnityEngine;
 
 public class AmmoUI : MonoBehaviour
 {
-    public WeaponShoot weapon;     // drag your weapon (the one with WeaponShoot) here
-    public TMP_Text ammoText;      // drag AmmoText (TMP) here
+    public TextMeshProUGUI ammoText;
+
+    private WeaponShoot currentWeapon;
+
+    public void SetWeapon(WeaponShoot newWeapon)
+    {
+        currentWeapon = newWeapon;
+        UpdateAmmo();
+    }
 
     void Update()
     {
-        if (weapon == null || ammoText == null) return;
+        UpdateAmmo();
+    }
 
-        ammoText.text = $"{weapon.ammoInMag} / {weapon.magSize}   |   {weapon.reserveAmmo}";
-        // Example: 7 / 12 | 48
+    void UpdateAmmo()
+    {
+        if (ammoText == null) return;
+
+        if (currentWeapon == null)
+        {
+            ammoText.text = "";
+            return;
+        }
+
+        ammoText.text = currentWeapon.ammoInMag + " / " + currentWeapon.reserveAmmo;
     }
 }

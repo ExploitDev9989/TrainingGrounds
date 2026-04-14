@@ -1,135 +1,171 @@
-using UnityEngine;
+﻿using UnityEngine;
 
-
-// This makes sure the player always has a CharacterController component
-// CharacterController handles collisions and movement with the environment
+// MW2019-inspired player movement:
+// smooth acceleration, strafe camera tilt, coyote jump, toggle crouch
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
-    //class variables. public so user can change settings ingame
     [Header("Movement")]
-    public float walkSpeed = 5f;       
-    public float sprintSpeed = 9f;     
-    public float gravity = -23f;       // force applieed every frame
-    public float jumpHeight = 1f;       
+    public float walkSpeed = 5f;
+    public float sprintSpeed = 8.5f;
+    public float crouchSpeed = 2.5f;
+    public float acceleration = 14f; // how quickly speed ramps up — higher = snappier
+    public float deceleration = 18f; // how quickly speed ramps down
+    public float gravity = -23f;
+    public float jumpHeight = 1.1f;
+
+    [Header("Coyote Jump")]
+    // lets the player jump for a short window after walking off a ledge
+    public float coyoteTime = 0.12f;
 
     [Header("Sprint")]
-    public KeyCode sprintKey = KeyCode.LeftShift; 
-    public float sprintFOV = 63f;       
-    public float normalFOV = 53f;      
-    public float fovSmooth = 8f;       
-    private float currentSpeed;        
-    private bool isSprinting;            
+    public KeyCode sprintKey = KeyCode.LeftShift;
+    public float sprintFOV = 63f;
+    public float normalFOV = 53f;
+    public float fovSmooth = 8f;
 
+    [Header("Crouch (toggle)")]
+    public KeyCode crouchKey = KeyCode.LeftControl;
+    public float standHeight = 2.5f;
+    public float crouchHeight = 1.1f;
+    public float crouchSmooth = 10f;
 
     [Header("Mouse Look")]
-    public Transform cameraTransform;  // used to rotate the camera up/down
-    public Camera playerCam;           // reference to the player camera (used for FOV)
-    public float mouseSensitivity = 2f;// how sensitive mouse movement is
-    public float maxLookAngle = 85f;   // prevents looking too far up or down
-    private CharacterController controller; // reference to Unity's CharacterController
-    private Vector3 velocity;          // used for gravity and jumping movement
-    private float xRotation = 0f;      // keeps track of vertical camera rotation
+    public Transform cameraTransform;
+    public Camera playerCam;
+    public float mouseSensitivity = 2f;
+    public float maxLookAngle = 85f;
+
+    [Header("Camera Strafe Tilt")]
+    // camera rolls slightly when moving left/right — feels grounded like MW2019
+    public float tiltAngle = 3f;
+    public float tiltSmooth = 8f;
+
+    // ── Private ──────────────────────────────────────────────────────────────
+    private CharacterController cc;
+    private Vector3 velocity;            // gravity / jump
+    private float xRotation;           // vertical camera angle
+    private float coyoteTimer;
+    private bool isCrouching;
+
+    // smooth movement uses SmoothDamp so speed changes feel physical
+    private Vector3 moveVelocity;
+    private Vector3 moveSmoothRef;
+
+    // ── Public read-only ─────────────────────────────────────────────────────
+    public bool IsSprinting { get; private set; }
+    public bool IsCrouching => isCrouching;
+    public bool IsGrounded => cc.isGrounded;
+    public Vector3 MoveVelocity => moveVelocity; // WeaponSway reads this
+
+    // ─────────────────────────────────────────────────────────────────────────
 
     void Awake()
     {
-        // get the CharacterController component attached to the player
-        controller = GetComponent<CharacterController>();
+        cc = GetComponent<CharacterController>();
 
-        // if the camera wasn't assigned in the inspector, find it automatically
-        if (playerCam == null)
-            playerCam = GetComponentInChildren<Camera>();
+        if (playerCam == null) playerCam = GetComponentInChildren<Camera>();
+        if (cameraTransform == null && playerCam != null) cameraTransform = playerCam.transform;
+        if (playerCam != null) playerCam.fieldOfView = normalFOV;
 
-        // set cameraTransform if it wasn't manually assigned
-        if (cameraTransform == null && playerCam != null)
-            cameraTransform = playerCam.transform;
-
-        // set the camera's starting field of view
-        if (playerCam != null)
-            playerCam.fieldOfView = normalFOV;
-
-        // lock the mouse cursor so the player can look around like an FPS game
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
     void Update()
     {
-        // handles mouse movement and camera rotation
         HandleMouseLook();
-
-        // check if sprint key is pressed AND player is actually moving
-        isSprinting = Input.GetKey(sprintKey) &&
-                      (Mathf.Abs(Input.GetAxisRaw("Horizontal")) > 0.01f || Mathf.Abs(Input.GetAxisRaw("Vertical")) > 0.01f);
-
-        // choose movement speed based on sprint state
-        currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
-
-        // handle movement and gravity
         HandleMovement();
-
-        // update camera FOV when sprinting
+        HandleCrouch();
         HandleFOV();
-    }
-
-    void HandleFOV()
-    {
-        // safety check so the game doesn't error if camera is gone
-        if (playerCam == null)
-            Debug.LogError("Playercam not assigned!");
-        return;
-
-        // choose which FOV we want depending on sprint state
-        float targetFOV = isSprinting ? sprintFOV : normalFOV;
-
-        // smoothly transition between FOV values
-        playerCam.fieldOfView = Mathf.Lerp(playerCam.fieldOfView, targetFOV, Time.deltaTime * fovSmooth);
     }
 
     void HandleMouseLook()
     {
-        // read mouse input
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
 
-        // rotate the player left/right
+        // yaw: rotate player body left/right
         transform.Rotate(Vector3.up * mouseX);
 
-        // control vertical camera rotation
+        // pitch: rotate camera up/down
         xRotation -= mouseY;
-
-        // prevent looking too far up or down
         xRotation = Mathf.Clamp(xRotation, -maxLookAngle, maxLookAngle);
 
-        // apply the vertical rotation to the camera
+        // strafe tilt: camera rolls when moving left/right
+        float strafeInput = Input.GetAxis("Horizontal");
+        float targetTilt = -strafeInput * tiltAngle;
+
         if (cameraTransform != null)
-            cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        {
+            // unwrap z from Unity's 0-360 range to -180-180 before lerping
+            float currentZ = cameraTransform.localEulerAngles.z;
+            if (currentZ > 180f) currentZ -= 360f;
+            float smoothZ = Mathf.Lerp(currentZ, targetTilt, Time.deltaTime * tiltSmooth);
+
+            cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, smoothZ);
+        }
     }
 
     void HandleMovement()
     {
-        
-        float x = Input.GetAxis("Horizontal"); // A/D or left/right
-        float z = Input.GetAxis("Vertical");   // W/S or forward/back
+        bool grounded = cc.isGrounded;
 
-        // calculate movement direction relative to player orientation
-        Vector3 move = (transform.right * x + transform.forward * z) * currentSpeed;
+        if (grounded)
+        {
+            coyoteTimer = coyoteTime;
+            if (velocity.y < 0f) velocity.y = -2f; // keep character snapped to ground
+        }
+        else
+        {
+            coyoteTimer -= Time.deltaTime;
+        }
 
-        // move player using CharacterController
-        controller.Move(move * Time.deltaTime);
+        float h = Input.GetAxisRaw("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
 
-        // if player is grounded and falling, keep them snapped to ground
-        if (controller.isGrounded && velocity.y < 0f)
-            velocity.y = -2f;
+        // sprint only when moving forward — not backwards or sideways (MW2019 behaviour)
+        IsSprinting = Input.GetKey(sprintKey) && v > 0.1f && !isCrouching;
 
-        // jump if player presses jump and is on the ground
-        if (controller.isGrounded && Input.GetButtonDown("Jump"))
+        float targetSpeed = isCrouching ? crouchSpeed : IsSprinting ? sprintSpeed : walkSpeed;
+        Vector3 rawMove = (transform.right * h + transform.forward * v).normalized * targetSpeed;
+
+        // accelerate faster than we decelerate — feels responsive but not jerky
+        float smoothTime = rawMove.magnitude > moveVelocity.magnitude
+            ? 1f / acceleration
+            : 1f / deceleration;
+
+        moveVelocity = Vector3.SmoothDamp(moveVelocity, rawMove, ref moveSmoothRef, smoothTime);
+        cc.Move(moveVelocity * Time.deltaTime);
+
+        // coyote jump — still lets you jump briefly after stepping off a ledge
+        if (Input.GetButtonDown("Jump") && coyoteTimer > 0f)
+        {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+            coyoteTimer = 0f;
+        }
 
-        // apply gravity
         velocity.y += gravity * Time.deltaTime;
+        cc.Move(velocity * Time.deltaTime);
+    }
 
-        // apply vertical movement (gravity + jumping)
-        controller.Move(velocity * Time.deltaTime);
+    void HandleCrouch()
+    {
+        // toggle on keydown rather than hold — more comfortable for long sessions
+        if (Input.GetKeyDown(crouchKey))
+            isCrouching = !isCrouching;
+
+        float targetHeight = isCrouching ? crouchHeight : standHeight;
+        cc.height = Mathf.Lerp(cc.height, targetHeight, Time.deltaTime * crouchSmooth);
+
+        // keep feet on the ground as height changes
+        cc.center = new Vector3(0f, cc.height * 0.5f, 0f);
+    }
+
+    void HandleFOV()
+    {
+        if (playerCam == null) return;
+        float target = IsSprinting ? sprintFOV : normalFOV;
+        playerCam.fieldOfView = Mathf.Lerp(playerCam.fieldOfView, target, Time.deltaTime * fovSmooth);
     }
 }

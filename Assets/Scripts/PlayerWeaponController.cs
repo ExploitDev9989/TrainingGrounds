@@ -7,16 +7,15 @@ public class PlayerWeaponController : MonoBehaviour
     public Camera playerCam;
     public WeaponADS weaponADS;
     public AmmoUI ammoUI;
+    public HitMarkerUI hitMarkerUI; // optional: assign in inspector
 
     private WeaponShoot currentWeaponShoot;
+    private GameObject currentWeaponObject;
 
     void Awake()
     {
-        if (weaponADS == null)
-            weaponADS = GetComponentInChildren<WeaponADS>();
-
-        if (playerCam == null)
-            playerCam = GetComponentInChildren<Camera>();
+        if (weaponADS == null) weaponADS = GetComponentInChildren<WeaponADS>();
+        if (playerCam == null) playerCam = GetComponentInChildren<Camera>();
     }
 
     void Start()
@@ -27,12 +26,8 @@ public class PlayerWeaponController : MonoBehaviour
 
     void DisableAllWeaponShoots()
     {
-        WeaponShoot[] allWeapons = FindObjectsByType<WeaponShoot>(FindObjectsSortMode.None);
-
-        foreach (WeaponShoot weapon in allWeapons)
-        {
-            weapon.enabled = false;
-        }
+        foreach (var w in FindObjectsByType<WeaponShoot>(FindObjectsSortMode.None))
+            w.enabled = false;
     }
 
     public void SetupExistingWeapon()
@@ -44,51 +39,60 @@ public class PlayerWeaponController : MonoBehaviour
         }
 
         currentWeaponShoot = weaponSocket.GetComponentInChildren<WeaponShoot>();
+        currentWeaponObject = currentWeaponShoot != null ? currentWeaponShoot.gameObject : null;
 
         if (currentWeaponShoot == null)
         {
-            Debug.LogWarning("No WeaponShoot found under weaponSocket.");
+            Debug.LogWarning("No WeaponShoot found in weaponSocket.");
             return;
         }
 
-        DisableAllWeaponShoots();
-
-        currentWeaponShoot.playerCam = playerCam;
-        currentWeaponShoot.enabled = true;
-
-        if (weaponADS != null &&
-            currentWeaponShoot.hipPos != null &&
-            currentWeaponShoot.adsPos != null)
-        {
-            weaponADS.SetPoses(currentWeaponShoot.hipPos, currentWeaponShoot.dsPos, true);
-        }
-
-        if (ammoUI != null)
-        {
-            ammoUI.weapon = currentWeaponShoot;
-        }
-
-        Debug.Log("Weapon ready: " + currentWeaponShoot.name);
+        ActivateWeapon(currentWeaponShoot);
     }
 
-    public void EquipWeapon(GameObject weaponPrefab)
+    public void EquipWeapon(GameObject newWeaponPrefab)
     {
-        if (weaponSocket == null || weaponPrefab == null)
+        if (newWeaponPrefab == null || weaponSocket == null)
         {
-            Debug.LogWarning("EquipWeapon failed: missing weaponSocket or weaponPrefab.");
+            Debug.LogWarning("EquipWeapon failed: missing prefab or weaponSocket.");
             return;
         }
 
-        for (int i = weaponSocket.childCount - 1; i >= 0; i--)
+        if (currentWeaponShoot != null) currentWeaponShoot.enabled = false;
+        if (currentWeaponObject != null) Destroy(currentWeaponObject);
+
+        GameObject instance = Instantiate(newWeaponPrefab, weaponSocket);
+        instance.transform.localPosition = Vector3.zero;
+        instance.transform.localRotation = Quaternion.identity;
+
+        currentWeaponObject = instance;
+        currentWeaponShoot = instance.GetComponentInChildren<WeaponShoot>();
+
+        if (currentWeaponShoot == null)
         {
-            Destroy(weaponSocket.GetChild(i).gameObject);
+            Debug.LogError("New weapon prefab has no WeaponShoot script!");
+            return;
         }
 
-        GameObject newWeapon = Instantiate(weaponPrefab, weaponSocket);
-        newWeapon.transform.localPosition = Vector3.zero;
-        newWeapon.transform.localRotation = Quaternion.identity;
-        newWeapon.transform.localScale = Vector3.one;
+        ActivateWeapon(currentWeaponShoot);
+        Debug.Log($"Equipped: {instance.name}");
+    }
 
-        SetupExistingWeapon();
+    void ActivateWeapon(WeaponShoot ws)
+    {
+        ws.enabled = true;
+        ws.playerCam = playerCam;
+
+        // FIX: tell WeaponADS about the new weapon's hip/ADS poses so ADS works after swapping
+        if (weaponADS != null)
+            weaponADS.SetPoses(ws.hipPos, ws.adsPos);
+
+        // event-driven ammo UI
+        if (ammoUI != null)
+            ammoUI.SetWeapon(ws);
+
+        // hook up hit markers
+        if (hitMarkerUI != null)
+            hitMarkerUI.SetWeapon(ws);
     }
 }

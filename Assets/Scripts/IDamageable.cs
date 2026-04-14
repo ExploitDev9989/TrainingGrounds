@@ -1,4 +1,5 @@
 public interface IDamageable
 {
-    void TakeDamage(int amount);
+    // returns true if this hit killed the target
+    bool TakeDamage(int amount);
 }

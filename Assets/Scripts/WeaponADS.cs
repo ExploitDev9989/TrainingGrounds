@@ -6,6 +6,7 @@ public class WeaponADS : MonoBehaviour
     public Transform hipPos;           // pose for hip-fire (not aiming)
     public Transform adsPos;           // pose for ADS (aiming down sights)
     public float adsSpeed = 12f;       // how fast we transition between hip and ADS
+    //public Transform target;
 
     void Start()
     {
@@ -74,5 +75,28 @@ public class WeaponADS : MonoBehaviour
 
         // optional: snap right away so it doesn't slowly drift from a wrong start position
         if (snapToHip) SnapTo(hipPos);
+    }
+    void OnDrawGizmos()
+    {
+        if (hipPos != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawSphere(hipPos.position, 0.02f);
+            Gizmos.DrawLine(hipPos.position, hipPos.position + hipPos.forward * 0.2f);
+        }
+
+        if (adsPos != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(adsPos.position, 0.02f);
+            Gizmos.DrawLine(adsPos.position, adsPos.position + adsPos.forward * 0.2f);
+        }
+
+        if (weaponSocket != null)
+        {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawSphere(weaponSocket.position, 0.02f);
+            Gizmos.DrawLine(weaponSocket.position, weaponSocket.position + weaponSocket.forward * 0.2f);
+        }
     }
 }
